@@ -13,6 +13,7 @@ bin/
 gen/
 .gradle/
 build/
+app/.externalNativeBuild/
 
 # Local configuration file (sdk path, etc)
 local.properties

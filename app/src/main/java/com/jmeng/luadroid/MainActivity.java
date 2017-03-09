@@ -8,14 +8,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
+
     @BindView(R.id.text)
     TextView textView;
+
+    Lua lua;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        textView.setText(new Lua().getResult("outa"));
+        lua = new Lua();
+        textView.setText(lua.parseLine("a = 1").second);
     }
 }

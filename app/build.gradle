@@ -3,7 +3,6 @@ apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.jmeng.luadroid"
         minSdkVersion 15
@@ -11,12 +10,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                arguments '-DANDROID_TOOLCHAIN=clang'
-            }
-        }
     }
+    buildToolsVersion "25.0.2"
 
     buildTypes {
         release {

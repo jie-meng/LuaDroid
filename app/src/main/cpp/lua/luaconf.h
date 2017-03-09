@@ -8,6 +8,13 @@
 #ifndef luaconf_h
 #define luaconf_h
 
+#if defined(__ANDROID__)
+#define lua_getlocaledecpoint() ('.')
+//#define LUA_USE_POSIX
+//#define LUA_USE_DLOPEN        /* needs an extra library: -ldl */
+#define LUA_USE_C89
+#endif
+
 #include <limits.h>
 #include <stddef.h>
 
@@ -670,8 +677,8 @@
 ** macro must include header 'locale.h'.)
 */
 #if !defined(lua_getlocaledecpoint)
-//#define lua_getlocaledecpoint()		(localeconv()->decimal_point[0])
-#define lua_getlocaledecpoint() ('.')
+#define lua_getlocaledecpoint()		(localeconv()->decimal_point[0])
+//#define lua_getlocaledecpoint() ('.')
 #endif
 
 /* }================================================================== */

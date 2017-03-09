@@ -7,11 +7,20 @@ import java.io.IOException;
 
 import static android.util.Pair.create;
 
-public class Lua implements Closeable {
+public final class Lua {
 
     private long luaState = 0;
 
     public Lua() {
+        init();
+    }
+
+    public boolean inValid() {
+        return luaState != 0;
+    }
+
+    public void init() {
+        close();
         luaState = newLuaState();
     }
 
@@ -29,10 +38,17 @@ public class Lua implements Closeable {
         return create(0 == errCode, message);
     }
 
+    public void close() {
+        if (luaState != 0) {
+            deleteLuaState(luaState);
+            luaState = 0;
+        }
+    }
+
     @Override
-    public void close() throws IOException {
-        deleteLuaState(luaState);
-        luaState = 0;
+    protected void finalize() throws Throwable {
+        close();
+        super.finalize();
     }
 
     static {

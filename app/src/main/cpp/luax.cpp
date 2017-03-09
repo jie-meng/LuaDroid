@@ -230,8 +230,7 @@ Java_com_jmeng_luadroid_Lua_luaParseLine(JNIEnv *env, jclass type, jlong luaStat
     string lineStr(line);
     env->ReleaseStringUTFChars(line_, line);
 
-    auto plua_state = reinterpret_cast<LuaState*>(luaStatePtr);
-    return plua_state->parseLine(lineStr);
+    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseLine(lineStr);
 }
 
 JNIEXPORT jint JNICALL
@@ -244,8 +243,7 @@ Java_com_jmeng_luadroid_Lua_luaParseFile(JNIEnv *env, jclass type, jlong luaStat
     string fileStr(file);
     env->ReleaseStringUTFChars(file_, file);
 
-    auto plua_state = reinterpret_cast<LuaState*>(luaStatePtr);
-    return plua_state->parseFile(fileStr);
+    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseFile(fileStr);
 }
 
 JNIEXPORT jstring JNICALL
@@ -254,7 +252,7 @@ Java_com_jmeng_luadroid_Lua_luaGetError(JNIEnv *env, jclass type, jlong luaState
     if (0 == luaStatePtr || -1 == errCode)
         return env->NewStringUTF("Invalid luaState");
 
-    return env->NewStringUTF(luaGetError(reinterpret_cast<lua_State*>(luaStatePtr), errCode).c_str());
+    return env->NewStringUTF((reinterpret_cast<LuaState*>(luaStatePtr))->getError().c_str());
 }
 
 #ifdef __cplusplus

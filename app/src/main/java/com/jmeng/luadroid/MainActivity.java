@@ -12,7 +12,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.text)
     TextView textView;
 
-    Lua lua;
+    private Lua lua;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         lua = new Lua();
-        textView.setText(lua.parseLine("a = 1").second);
+        textView.setText(lua.parseLine("a --+++ 1").second);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (lua != null) {
+            lua.close();
+        }
+        super.onDestroy();
     }
 }

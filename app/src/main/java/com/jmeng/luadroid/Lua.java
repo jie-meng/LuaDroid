@@ -2,9 +2,6 @@ package com.jmeng.luadroid;
 
 import android.util.Pair;
 
-import java.io.Closeable;
-import java.io.IOException;
-
 import static android.util.Pair.create;
 
 public final class Lua {
@@ -15,7 +12,7 @@ public final class Lua {
         init();
     }
 
-    public boolean inValid() {
+    public boolean isValid() {
         return luaState != 0;
     }
 
@@ -36,6 +33,30 @@ public final class Lua {
         String message = luaGetError(luaState, errCode);
 
         return create(0 == errCode, message);
+    }
+
+    public String getString(String name) {
+        luaGetGlobal(luaState, name);
+        String s = luaGetString(luaState, 1);
+        luaPop(luaState, -1);
+        return s;
+    }
+
+    public void setString(String name, String value) {
+        luaPushString(luaState, value);
+        luaSetGlobal(luaState, name);
+    }
+
+    public boolean getBoolean(String name) {
+        luaGetGlobal(luaState, name);
+        boolean b = luaGetBoolean(luaState, 1);
+        luaPop(luaState, -1);
+        return b;
+    }
+
+    public void setBoolean(String name, boolean value) {
+        luaPushBoolean(luaState, value);
+        luaSetGlobal(luaState, name);
     }
 
     public void close() {
@@ -64,4 +85,18 @@ public final class Lua {
     private static native int luaParseFile(long luaStatePtr, String file);
 
     private static native String luaGetError(long luaStatePtr, int errCode);
+
+    private static native void luaGetGlobal(long luaStatePtr, String name);
+
+    private static native void luaSetGlobal(long luaStatePtr, String name);
+
+    private static native void luaPop(long luaStatePtr, int index);
+
+    private static native void luaPushString(long luaStatePtr, String str);
+
+    private static native String luaGetString(long luaStatePtr, int index);
+
+    private static native void luaPushBoolean(long luaStatePtr, boolean data);
+
+    private static native boolean luaGetBoolean(long luaStatePtr, int index);
 }

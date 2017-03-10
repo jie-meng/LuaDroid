@@ -20,7 +20,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         lua = new Lua();
-        textView.setText(lua.parseLine("a --+++ 1").second);
+        lua.setString("s", "test");
+        lua.parseLine("result = string.find(s, 'es')");
+        textView.setText(Boolean.toString(lua.getBoolean("result")));
     }
 
     @Override

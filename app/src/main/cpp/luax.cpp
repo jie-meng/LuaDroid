@@ -1,11 +1,25 @@
 #include <string>
 #include <jni.h>
+#include <cstdio>
+#include <cstdarg>
+#include <ctype.h>
 #include "lua/lua.hpp"
 
 using namespace std;
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) TypeName(const TypeName&); TypeName& operator=(const TypeName&);
 typedef int (*LuaCFunc)(lua_State*);
+const size_t kBufSize = 4096;
+
+std::string strFormat(const char* fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    char buffer[kBufSize] = {0};
+    vsnprintf(buffer, kBufSize, fmt, ap);
+    va_end(ap);
+    return std::string(buffer);
+}
 
 //lua utility functions
 void luaPop(lua_State* plua_state, int count)
@@ -21,6 +35,11 @@ int luaGetTop(lua_State* plua_state)
 void luaGetGlobal(lua_State* plua_state, const std::string& name)
 {
     lua_getglobal(plua_state, name.c_str());
+}
+
+void luaSetGlobal(lua_State* plua_state, const std::string& name)
+{
+    lua_setglobal(plua_state, name.c_str());
 }
 
 int luaCallFunc(lua_State* plua_state, int nargs, int nrets)
@@ -40,6 +59,75 @@ void luaAssert(lua_State* plua_state, bool assertion, const std::string& str)
 void luaError(lua_State* plua_state, const std::string& str)
 {
     luaL_error(plua_state, "%s", str.c_str());
+}
+
+double luaGetDouble(lua_State* plua_state, int index)
+{
+    return lua_tonumber(plua_state, index);
+}
+
+double luaGetDouble(lua_State* plua_state, int index, double default_num)
+{
+    return lua_isnumber(plua_state, index) ? luaGetDouble(plua_state, index) : default_num;
+}
+
+int luaGetInteger(lua_State* plua_state, int index)
+{
+    return lua_tointeger(plua_state, index);
+}
+
+int luaGetInteger(lua_State* plua_state, int index, int default_int)
+{
+    return lua_isnumber(plua_state, index) ? luaGetInteger(plua_state, index) : default_int;
+}
+
+std::string luaGetString(lua_State* plua_state, int index)
+{
+    const char* result = lua_tostring(plua_state, index);
+    if (!result)
+        luaError(plua_state, strFormat("luaGetString from index %d failed.", index));
+
+    return std::string(lua_tostring(plua_state, index));
+}
+
+std::string luaGetString(lua_State* plua_state, int index, const std::string& default_str)
+{
+    return lua_isstring(plua_state, index) ? luaGetString(plua_state, index) : default_str.c_str();
+}
+
+bool luaGetBoolean(lua_State* plua_state, int index)
+{
+    return bool(lua_toboolean(plua_state, index));
+}
+
+bool luaGetBoolean(lua_State* plua_state, int index, bool default_bool)
+{
+    return lua_isboolean(plua_state, index) ? luaGetBoolean(plua_state, index) : default_bool;
+}
+
+void luaPushDouble(lua_State* plua_state, double double_val)
+{
+    lua_pushnumber(plua_state, double_val);
+}
+
+void luaPushInteger(lua_State* plua_state, int int_val)
+{
+    lua_pushinteger(plua_state, int_val);
+}
+
+void luaPushString(lua_State* plua_state, const std::string& str_val)
+{
+    lua_pushstring(plua_state, str_val.c_str());
+}
+
+void luaPushNil(lua_State* plua_state)
+{
+    lua_pushnil(plua_state);
+}
+
+void luaPushBoolean(lua_State* plua_state, bool boolean)
+{
+    lua_pushboolean(plua_state, boolean);
 }
 
 //luaGetError
@@ -117,6 +205,7 @@ int luaParseFile(lua_State* plua_state, const std::string& file, std::string& er
 }
 
 //LuaState definition
+//LuaState
 class LuaState
 {
 public:
@@ -128,6 +217,28 @@ public:
     int parseLine(const std::string& line);
     int parseFile(const std::string& file);
     bool reset();
+    //get operate
+    inline double getDouble(int index) { return luaGetDouble(getState(), index); }
+    inline double getDouble(int index, double default_num) { return luaGetDouble(getState(), index, default_num); }
+    inline int getInteger(int index) { return luaGetInteger(getState(), index); }
+    inline int getInteger(int index, int default_int) { return luaGetInteger(getState(), index, default_int); }
+    inline std::string getString(int index) { return luaGetString(getState(), index); }
+    inline std::string getString(int index, const std::string& default_str) { return luaGetString(getState(), index, default_str); }
+    inline bool getBoolean(int index) { return luaGetBoolean(getState(), index); }
+    inline bool getBoolean(int index, bool default_bool) { return luaGetBoolean(getState(), index, default_bool); }
+
+    //push operate
+    inline void pushDouble(double double_val) { luaPushDouble(getState(), double_val); }
+    inline void pushInteger(int int_val) { luaPushInteger(getState(), int_val); }
+    inline void pushString(const std::string& str_val) { luaPushString(getState(), str_val); }
+    inline void pushNil() { luaPushNil(getState()); }
+    inline void pushBoolean(bool boolean) { luaPushBoolean(getState(), boolean); }
+
+    //other operate
+    inline void pop(int index) { luaPop(getState(), index); }
+    inline int getTop() { return luaGetTop(getState()); }
+    inline void getGlobal(const std::string& name) { luaGetGlobal(getState(), name); }
+    inline void setGlobal(const std::string& name) { luaSetGlobal(getState(), name); }
 private:
     bool init();
     void cleanup();
@@ -138,6 +249,8 @@ private:
 private:
     DISALLOW_COPY_AND_ASSIGN(LuaState)
 };
+
+string getStringFromJni(JNIEnv *env, jstring str);
 
 //LuaState implementation
 LuaState::LuaState() :
@@ -204,6 +317,14 @@ void LuaState::registerFunction(const std::string& func_name, LuaCFunc lua_reg_f
 }
 
 #ifdef __cplusplus
+
+string getStringFromJni(JNIEnv *env, jstring str) {
+    const char *char_str = env->GetStringUTFChars(str, 0);
+    string stdstring(char_str);
+    env->ReleaseStringUTFChars(str, char_str);
+    return stdstring;
+}
+
 extern "C" {
 #endif
 
@@ -226,11 +347,7 @@ Java_com_jmeng_luadroid_Lua_luaParseLine(JNIEnv *env, jclass type, jlong luaStat
     if (0 == luaStatePtr)
         return -1;
 
-    const char *line = env->GetStringUTFChars(line_, 0);
-    string lineStr(line);
-    env->ReleaseStringUTFChars(line_, line);
-
-    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseLine(lineStr);
+    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseLine(getStringFromJni(env, line_));
 }
 
 JNIEXPORT jint JNICALL
@@ -239,11 +356,7 @@ Java_com_jmeng_luadroid_Lua_luaParseFile(JNIEnv *env, jclass type, jlong luaStat
     if (0 == luaStatePtr)
         return -1;
 
-    const char *file = env->GetStringUTFChars(file_, 0);
-    string fileStr(file);
-    env->ReleaseStringUTFChars(file_, file);
-
-    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseFile(fileStr);
+    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseFile(getStringFromJni(env, file_));
 }
 
 JNIEXPORT jstring JNICALL
@@ -253,6 +366,57 @@ Java_com_jmeng_luadroid_Lua_luaGetError(JNIEnv *env, jclass type, jlong luaState
         return env->NewStringUTF("Invalid luaState");
 
     return env->NewStringUTF((reinterpret_cast<LuaState*>(luaStatePtr))->getError().c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_luadroid_Lua_luaGetGlobal(JNIEnv *env, jclass type, jlong luaStatePtr,
+                                         jstring name_) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->getGlobal(getStringFromJni(env, name_));
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_luadroid_Lua_luaSetGlobal(JNIEnv *env, jclass type, jlong luaStatePtr,
+                                         jstring name_) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->setGlobal(getStringFromJni(env, name_));
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_luadroid_Lua_luaPop(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->pop(index);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_luadroid_Lua_luaPushString(JNIEnv *env, jclass type, jlong luaStatePtr,
+                                          jstring str_) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->pushString(getStringFromJni(env, str_));
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_jmeng_luadroid_Lua_luaGetString(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
+    return env->NewStringUTF(0 != luaStatePtr
+                             ? reinterpret_cast<LuaState*>(luaStatePtr)->getString(index).c_str()
+                             : nullptr);
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_luadroid_Lua_luaPushBoolean(JNIEnv *env, jclass type, jlong luaStatePtr,
+                                           jboolean data) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->pushBoolean(data);
+    }
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_jmeng_luadroid_Lua_luaGetBoolean(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
+    return (jboolean) (0 != luaStatePtr && reinterpret_cast<LuaState*>(luaStatePtr)->getBoolean(index));
 }
 
 #ifdef __cplusplus

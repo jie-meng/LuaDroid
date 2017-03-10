@@ -1,0 +1,3 @@
+/Users/jiemeng/workspace/git/LuaDroid/lualib/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/jiemeng/workspace/git/LuaDroid/lualib/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+/Users/jiemeng/workspace/git/LuaDroid/lualib/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/luax.dir

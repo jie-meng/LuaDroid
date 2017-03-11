@@ -1,3 +1,0 @@
-/Users/jiemeng/workspace/git/LuaDroid/lualib/.externalNativeBuild/cmake/release/mips/CMakeFiles/edit_cache.dir
-/Users/jiemeng/workspace/git/LuaDroid/lualib/.externalNativeBuild/cmake/release/mips/CMakeFiles/rebuild_cache.dir
-/Users/jiemeng/workspace/git/LuaDroid/lualib/.externalNativeBuild/cmake/release/mips/CMakeFiles/luax.dir

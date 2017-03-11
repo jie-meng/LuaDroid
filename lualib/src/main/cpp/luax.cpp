@@ -228,11 +228,11 @@ public:
     inline bool getBoolean(int index, bool default_bool) { return luaGetBoolean(getState(), index, default_bool); }
 
     //push operate
-    inline void pushDouble(double double_val) { luaPushDouble(getState(), double_val); }
-    inline void pushInteger(int int_val) { luaPushInteger(getState(), int_val); }
-    inline void pushString(const std::string& str_val) { luaPushString(getState(), str_val); }
+    inline void pushDouble(double value) { luaPushDouble(getState(), value); }
+    inline void pushInteger(int value) { luaPushInteger(getState(), value); }
+    inline void pushString(const std::string& value) { luaPushString(getState(), value); }
     inline void pushNil() { luaPushNil(getState()); }
-    inline void pushBoolean(bool boolean) { luaPushBoolean(getState(), boolean); }
+    inline void pushBoolean(bool value) { luaPushBoolean(getState(), value); }
 
     //other operate
     inline void pop(int index) { luaPop(getState(), index); }
@@ -330,57 +330,60 @@ extern "C" {
 
 JNIEXPORT jlong JNICALL
 Java_com_jmeng_lualib_Lua_newLuaState(JNIEnv *env, jclass type) {
-
     return reinterpret_cast<jlong>(new LuaState());
 }
 
 JNIEXPORT void JNICALL
 Java_com_jmeng_lualib_Lua_deleteLuaState(JNIEnv *env, jclass type, jlong luaStatePtr) {
 
-    if (0 != luaStatePtr)
+    if (0 != luaStatePtr) {
         delete reinterpret_cast<LuaState*>(luaStatePtr);
+    }
 }
 
 JNIEXPORT jint JNICALL
 Java_com_jmeng_lualib_Lua_luaParseLine(JNIEnv *env, jclass type, jlong luaStatePtr,
-                                         jstring line_) {
-    if (0 == luaStatePtr)
+                                         jstring file) {
+    if (0 == luaStatePtr) {
         return -1;
+    }
 
-    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseLine(getStringFromJni(env, line_));
+    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseLine(getStringFromJni(env, file));
 }
 
 JNIEXPORT jint JNICALL
 Java_com_jmeng_lualib_Lua_luaParseFile(JNIEnv *env, jclass type, jlong luaStatePtr,
-                                         jstring file_) {
-    if (0 == luaStatePtr)
+                                         jstring file) {
+    if (0 == luaStatePtr) {
         return -1;
+    }
 
-    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseFile(getStringFromJni(env, file_));
+    return (reinterpret_cast<LuaState*>(luaStatePtr))->parseFile(getStringFromJni(env, file));
 }
 
 JNIEXPORT jstring JNICALL
 Java_com_jmeng_lualib_Lua_luaGetError(JNIEnv *env, jclass type, jlong luaStatePtr, jint errCode) {
 
-    if (0 == luaStatePtr || -1 == errCode)
+    if (0 == luaStatePtr || -1 == errCode) {
         return env->NewStringUTF("Invalid luaState");
+    }
 
     return env->NewStringUTF((reinterpret_cast<LuaState*>(luaStatePtr))->getError().c_str());
 }
 
 JNIEXPORT void JNICALL
 Java_com_jmeng_lualib_Lua_luaGetGlobal(JNIEnv *env, jclass type, jlong luaStatePtr,
-                                         jstring name_) {
+                                         jstring name) {
     if (0 != luaStatePtr) {
-        reinterpret_cast<LuaState*>(luaStatePtr)->getGlobal(getStringFromJni(env, name_));
+        reinterpret_cast<LuaState*>(luaStatePtr)->getGlobal(getStringFromJni(env, name));
     }
 }
 
 JNIEXPORT void JNICALL
 Java_com_jmeng_lualib_Lua_luaSetGlobal(JNIEnv *env, jclass type, jlong luaStatePtr,
-                                         jstring name_) {
+                                         jstring name) {
     if (0 != luaStatePtr) {
-        reinterpret_cast<LuaState*>(luaStatePtr)->setGlobal(getStringFromJni(env, name_));
+        reinterpret_cast<LuaState*>(luaStatePtr)->setGlobal(getStringFromJni(env, name));
     }
 }
 
@@ -393,30 +396,56 @@ Java_com_jmeng_lualib_Lua_luaPop(JNIEnv *env, jclass type, jlong luaStatePtr, ji
 
 JNIEXPORT void JNICALL
 Java_com_jmeng_lualib_Lua_luaPushString(JNIEnv *env, jclass type, jlong luaStatePtr,
-                                          jstring str_) {
+                                          jstring value) {
     if (0 != luaStatePtr) {
-        reinterpret_cast<LuaState*>(luaStatePtr)->pushString(getStringFromJni(env, str_));
+        reinterpret_cast<LuaState*>(luaStatePtr)->pushString(getStringFromJni(env, value));
     }
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_jmeng_lualib_Lua_luaGetString(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
-    return env->NewStringUTF(0 != luaStatePtr
-                             ? reinterpret_cast<LuaState*>(luaStatePtr)->getString(index).c_str()
-                             : nullptr);
+Java_com_jmeng_lualib_Lua_luaGetString(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jstring defaultValue) {
+    auto defStr = getStringFromJni(env, defaultValue);
+    return 0 != luaStatePtr
+           ? env->NewStringUTF(reinterpret_cast<LuaState*>(luaStatePtr)->getString(index, defStr).c_str())
+           : env->NewStringUTF(defStr.c_str());
 }
 
 JNIEXPORT void JNICALL
 Java_com_jmeng_lualib_Lua_luaPushBoolean(JNIEnv *env, jclass type, jlong luaStatePtr,
-                                           jboolean data) {
+                                           jboolean value) {
     if (0 != luaStatePtr) {
-        reinterpret_cast<LuaState*>(luaStatePtr)->pushBoolean(data);
+        reinterpret_cast<LuaState*>(luaStatePtr)->pushBoolean(value);
     }
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_jmeng_lualib_Lua_luaGetBoolean(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
-    return (jboolean) (0 != luaStatePtr && reinterpret_cast<LuaState*>(luaStatePtr)->getBoolean(index));
+Java_com_jmeng_lualib_Lua_luaGetBoolean(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jboolean defaultValue) {
+    return (jboolean) (0 != luaStatePtr && reinterpret_cast<LuaState*>(luaStatePtr)->getBoolean(index, defaultValue));
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_lualib_Lua_luaPushInteger(JNIEnv *env, jclass type, jlong luaStatePtr, jint value) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->pushInteger(value);
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_jmeng_lualib_Lua_luaGetInteger(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jint defaultValue) {
+    return (jint) (0 != luaStatePtr ? reinterpret_cast<LuaState*>(luaStatePtr)->getInteger(index, defaultValue) : defaultValue);
+}
+
+JNIEXPORT void JNICALL
+Java_com_jmeng_lualib_Lua_luaPushDouble(JNIEnv *env, jclass type, jlong luaStatePtr,
+                                        jdouble value) {
+    if (0 != luaStatePtr) {
+        reinterpret_cast<LuaState*>(luaStatePtr)->pushDouble(value);
+    }
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_jmeng_lualib_Lua_luaGetDouble(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jdouble defaultValue) {
+    return (jdouble) (0 != luaStatePtr ? reinterpret_cast<LuaState*>(luaStatePtr)->getDouble(index, defaultValue) : defaultValue);
 }
 
 #ifdef __cplusplus

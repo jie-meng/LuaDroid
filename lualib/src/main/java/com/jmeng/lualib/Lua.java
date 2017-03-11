@@ -35,9 +35,9 @@ public final class Lua {
         return create(0 == errCode, message);
     }
 
-    public String getString(String name) {
+    public String getString(String name, String defaultValue) {
         luaGetGlobal(luaState, name);
-        String s = luaGetString(luaState, 1);
+        String s = luaGetString(luaState, 1, defaultValue);
         luaPop(luaState, -1);
         return s;
     }
@@ -47,15 +47,39 @@ public final class Lua {
         luaSetGlobal(luaState, name);
     }
 
-    public boolean getBoolean(String name) {
+    public boolean getBoolean(String name, boolean defaultValue) {
         luaGetGlobal(luaState, name);
-        boolean b = luaGetBoolean(luaState, 1);
+        boolean value = luaGetBoolean(luaState, 1, defaultValue);
         luaPop(luaState, -1);
-        return b;
+        return value;
     }
 
     public void setBoolean(String name, boolean value) {
         luaPushBoolean(luaState, value);
+        luaSetGlobal(luaState, name);
+    }
+
+    public int getInteger(String name, int defaultValue) {
+        luaGetGlobal(luaState, name);
+        int value = luaGetInteger(luaState, 1, defaultValue);
+        luaPop(luaState, -1);
+        return value;
+    }
+
+    public void setInteger(String name, int value) {
+        luaPushInteger(luaState, value);
+        luaSetGlobal(luaState, name);
+    }
+
+    public double getDouble(String name, double defaultValue) {
+        luaGetGlobal(luaState, name);
+        double value = luaGetDouble(luaState, 1, defaultValue);
+        luaPop(luaState, -1);
+        return value;
+    }
+
+    public void setDouble(String name, double value) {
+        luaPushDouble(luaState, value);
         luaSetGlobal(luaState, name);
     }
 
@@ -92,11 +116,19 @@ public final class Lua {
 
     private static native void luaPop(long luaStatePtr, int index);
 
-    private static native void luaPushString(long luaStatePtr, String str);
+    private static native void luaPushString(long luaStatePtr, String value);
 
-    private static native String luaGetString(long luaStatePtr, int index);
+    private static native String luaGetString(long luaStatePtr, int index, String defaultValue);
 
-    private static native void luaPushBoolean(long luaStatePtr, boolean data);
+    private static native void luaPushBoolean(long luaStatePtr, boolean value);
 
-    private static native boolean luaGetBoolean(long luaStatePtr, int index);
+    private static native boolean luaGetBoolean(long luaStatePtr, int index, boolean defaultValue);
+
+    private static native void luaPushInteger(long luaStatePtr, int value);
+
+    private static native int luaGetInteger(long luaStatePtr, int index, int defaultValue);
+
+    private static native void luaPushDouble(long luaStatePtr, double value);
+
+    private static native double luaGetDouble(long luaStatePtr, int index, double defaultValue);
 }

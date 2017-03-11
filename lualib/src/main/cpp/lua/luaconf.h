@@ -10,8 +10,6 @@
 
 #if defined(__ANDROID__)
 #define lua_getlocaledecpoint() ('.')
-//#define LUA_USE_POSIX
-//#define LUA_USE_DLOPEN        /* needs an extra library: -ldl */
 #define LUA_USE_C89
 #endif
 

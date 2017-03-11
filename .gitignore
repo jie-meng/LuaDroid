@@ -13,6 +13,7 @@ bin/
 gen/
 .gradle/
 build/
+lualib/.externalNativeBuild/
 app/.externalNativeBuild/
 
 # Local configuration file (sdk path, etc)

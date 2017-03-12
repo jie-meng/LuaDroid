@@ -6,22 +6,18 @@ import static android.util.Pair.create;
 
 public final class Lua {
 
+    private static final String ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED = "Lua local object is destroyed!";
     private long luaState = 0;
 
     public Lua() {
-        init();
-    }
-
-    public boolean isValid() {
-        return luaState != 0;
-    }
-
-    public void init() {
-        close();
         luaState = newLuaState();
     }
 
     public Pair<Boolean, String> parseLine(String line) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         int errCode = luaParseLine(luaState, line);
         String message = luaGetError(luaState, errCode);
 
@@ -29,6 +25,10 @@ public final class Lua {
     }
 
     public Pair<Boolean, String> parseFile(String file) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         int errCode = luaParseFile(luaState, file);
         String message = luaGetError(luaState, errCode);
 
@@ -36,6 +36,10 @@ public final class Lua {
     }
 
     public String getString(String name, String defaultValue) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaGetGlobal(luaState, name);
         String s = luaGetString(luaState, 1, defaultValue);
         luaPop(luaState, -1);
@@ -43,11 +47,19 @@ public final class Lua {
     }
 
     public void setString(String name, String value) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaPushString(luaState, value);
         luaSetGlobal(luaState, name);
     }
 
     public boolean getBoolean(String name, boolean defaultValue) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaGetGlobal(luaState, name);
         boolean value = luaGetBoolean(luaState, 1, defaultValue);
         luaPop(luaState, -1);
@@ -55,11 +67,19 @@ public final class Lua {
     }
 
     public void setBoolean(String name, boolean value) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaPushBoolean(luaState, value);
         luaSetGlobal(luaState, name);
     }
 
     public int getInteger(String name, int defaultValue) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaGetGlobal(luaState, name);
         int value = luaGetInteger(luaState, 1, defaultValue);
         luaPop(luaState, -1);
@@ -67,11 +87,19 @@ public final class Lua {
     }
 
     public void setInteger(String name, int value) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaPushInteger(luaState, value);
         luaSetGlobal(luaState, name);
     }
 
     public double getDouble(String name, double defaultValue) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaGetGlobal(luaState, name);
         double value = luaGetDouble(luaState, 1, defaultValue);
         luaPop(luaState, -1);
@@ -79,6 +107,10 @@ public final class Lua {
     }
 
     public void setDouble(String name, double value) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
         luaPushDouble(luaState, value);
         luaSetGlobal(luaState, name);
     }

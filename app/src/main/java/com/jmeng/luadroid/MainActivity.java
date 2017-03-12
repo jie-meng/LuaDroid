@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
                 Boolean.toString(lua.getBoolean("result", true)),
                 lua.getInteger("i", -1),
                 lua.getDouble("d", -0.1),
-                lua.getString("s1", ""),
+                lua.getString("s1", "[]"),
                 lua.getBoolean("b1", true),
                 lua.getInteger("i1", -1),
                 lua.getDouble("d1", -0.1)));

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jmeng.lualib">
+    package="com.jmengxy.lualib">
 
     <application
         android:label="@string/app_name"

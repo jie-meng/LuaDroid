@@ -4,7 +4,7 @@ apply plugin: 'me.tatarka.retrolambda'
 android {
     compileSdkVersion 25
     defaultConfig {
-        applicationId "com.jmeng.luadroid"
+        applicationId "com.jmengxy.luadroid"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1

@@ -1,10 +1,11 @@
-package com.jmeng.luadroid;
+package com.jmengxy.luadroid;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
-import com.jmeng.lualib.Lua;
+import com.jmengxy.luadroid.R;
+import com.jmengxy.lualib.Lua;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

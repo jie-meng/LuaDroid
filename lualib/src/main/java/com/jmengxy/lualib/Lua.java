@@ -50,19 +50,21 @@ public final class Lua {
 
     private static native void luaPushString(long luaStatePtr, String value);
 
-    private static native String luaGetString(long luaStatePtr, int index, String defaultValue);
+    private static native String luaToString(long luaStatePtr, int index, String defaultValue);
 
     private static native void luaPushBoolean(long luaStatePtr, boolean value);
 
-    private static native boolean luaGetBoolean(long luaStatePtr, int index, boolean defaultValue);
+    private static native boolean luaToBoolean(long luaStatePtr, int index, boolean defaultValue);
+
+    private static native boolean luaIsInteger(long luaStatePtr, int index);
 
     private static native void luaPushInteger(long luaStatePtr, int value);
 
-    private static native int luaGetInteger(long luaStatePtr, int index, int defaultValue);
+    private static native int luaToInteger(long luaStatePtr, int index, int defaultValue);
 
     private static native void luaPushDouble(long luaStatePtr, double value);
 
-    private static native double luaGetDouble(long luaStatePtr, int index, double defaultValue);
+    private static native double luaToDouble(long luaStatePtr, int index, double defaultValue);
 
     public Pair<Boolean, String> parseLine(String line) {
         if (0 == luaState) {
@@ -104,7 +106,7 @@ public final class Lua {
         }
 
         luaGetGlobal(luaState, name);
-        String s = luaGetString(luaState, 1, defaultValue);
+        String s = luaToString(luaState, 1, defaultValue);
         luaPop(luaState, -1);
         return s;
     }
@@ -124,7 +126,7 @@ public final class Lua {
         }
 
         luaGetGlobal(luaState, name);
-        boolean value = luaGetBoolean(luaState, 1, defaultValue);
+        boolean value = luaToBoolean(luaState, 1, defaultValue);
         luaPop(luaState, -1);
         return value;
     }
@@ -138,13 +140,24 @@ public final class Lua {
         luaSetGlobal(luaState, name);
     }
 
+    public boolean isInteger(String name) {
+        if (0 == luaState) {
+            throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
+        }
+
+        luaGetGlobal(luaState, name);
+        boolean isInteger = luaIsInteger(luaState, 1);
+        luaPop(luaState, -1);
+        return isInteger;
+    }
+
     public int getInteger(String name, int defaultValue) {
         if (0 == luaState) {
             throw new RuntimeException(ERROR_LUA_LOCAL_OBJECT_IS_DESTROYED);
         }
 
         luaGetGlobal(luaState, name);
-        int value = luaGetInteger(luaState, 1, defaultValue);
+        int value = luaToInteger(luaState, 1, defaultValue);
         luaPop(luaState, -1);
         return value;
     }
@@ -164,7 +177,7 @@ public final class Lua {
         }
 
         luaGetGlobal(luaState, name);
-        double value = luaGetDouble(luaState, 1, defaultValue);
+        double value = luaToDouble(luaState, 1, defaultValue);
         luaPop(luaState, -1);
         return value;
     }

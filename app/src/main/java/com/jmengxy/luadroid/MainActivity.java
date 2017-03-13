@@ -37,13 +37,18 @@ public class MainActivity extends AppCompatActivity {
 //                lua.getInteger("i1", -1),
 //                lua.getDouble("d1", -0.1)));
         lua.setString("s", "greeting");
-        lua.parseLine("r = true");
+        lua.parseLine("r = 3");
         if (lua.getType("r") == Lua.LUA_TYPE_BOOLEAN) {
             boolean b = lua.getBoolean("r", false);
             textView.setText(Boolean.toString(b));
         } else if (lua.getType("r") == Lua.LUA_TYPE_NUMBER) {
-            int b = lua.getInteger("r", 3);
-            textView.setText(Integer.toString(b));
+            if (lua.isInteger("r")) {
+                int value = lua.getInteger("r", 0);
+                textView.setText(Integer.toString(value));
+            } else {
+                double value = lua.getDouble("r", -0.1);
+                textView.setText(Double.toString(value));
+            }
         }
     }
 

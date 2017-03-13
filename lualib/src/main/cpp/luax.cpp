@@ -42,7 +42,6 @@ LuaType luaGetType(lua_State* plua_state, int index)
     return (LuaType)lua_type(plua_state, index);
 }
 
-
 void luaPop(lua_State* plua_state, int count)
 {
     lua_pop(plua_state, count);
@@ -82,48 +81,53 @@ void luaError(lua_State* plua_state, const std::string& str)
     luaL_error(plua_state, "%s", str.c_str());
 }
 
-double luaGetDouble(lua_State* plua_state, int index)
+double luaToDouble(lua_State* plua_state, int index)
 {
     return lua_tonumber(plua_state, index);
 }
 
-double luaGetDouble(lua_State* plua_state, int index, double default_num)
+double luaToDouble(lua_State* plua_state, int index, double default_num)
 {
-    return lua_isnumber(plua_state, index) ? luaGetDouble(plua_state, index) : default_num;
+    return lua_isnumber(plua_state, index) ? luaToDouble(plua_state, index) : default_num;
 }
 
-int luaGetInteger(lua_State* plua_state, int index)
+bool luaIsInteger(lua_State* plua_state, int index)
+{
+    return lua_isinteger(plua_state, index);
+}
+
+int luaToInteger(lua_State* plua_state, int index)
 {
     return lua_tointeger(plua_state, index);
 }
 
-int luaGetInteger(lua_State* plua_state, int index, int default_int)
+int luaToInteger(lua_State* plua_state, int index, int default_int)
 {
-    return lua_isnumber(plua_state, index) ? luaGetInteger(plua_state, index) : default_int;
+    return lua_isinteger(plua_state, index) ? luaToInteger(plua_state, index) : default_int;
 }
 
-std::string luaGetString(lua_State* plua_state, int index)
+std::string luaToString(lua_State* plua_state, int index)
 {
     const char* result = lua_tostring(plua_state, index);
     if (!result)
-        luaError(plua_state, strFormat("luaGetString from index %d failed.", index));
+        luaError(plua_state, strFormat("luaToString from index %d failed.", index));
 
     return std::string(lua_tostring(plua_state, index));
 }
 
-std::string luaGetString(lua_State* plua_state, int index, const std::string& default_str)
+std::string luaToString(lua_State* plua_state, int index, const std::string& default_str)
 {
-    return lua_isstring(plua_state, index) ? luaGetString(plua_state, index) : default_str.c_str();
+    return lua_isstring(plua_state, index) ? luaToString(plua_state, index) : default_str.c_str();
 }
 
-bool luaGetBoolean(lua_State* plua_state, int index)
+bool luaToBoolean(lua_State* plua_state, int index)
 {
-    return bool(lua_toboolean(plua_state, index));
+    return (bool)lua_toboolean(plua_state, index);
 }
 
-bool luaGetBoolean(lua_State* plua_state, int index, bool default_bool)
+bool luaToBoolean(lua_State* plua_state, int index, bool default_bool)
 {
-    return lua_isboolean(plua_state, index) ? luaGetBoolean(plua_state, index) : default_bool;
+    return lua_isboolean(plua_state, index) ? luaToBoolean(plua_state, index) : default_bool;
 }
 
 void luaPushDouble(lua_State* plua_state, double double_val)
@@ -240,14 +244,15 @@ public:
 
     //get operate
     inline int getType(int index) { return (int)luaGetType(getState(), index); }
-    inline double getDouble(int index) { return luaGetDouble(getState(), index); }
-    inline double getDouble(int index, double default_num) { return luaGetDouble(getState(), index, default_num); }
-    inline int getInteger(int index) { return luaGetInteger(getState(), index); }
-    inline int getInteger(int index, int default_int) { return luaGetInteger(getState(), index, default_int); }
-    inline std::string getString(int index) { return luaGetString(getState(), index); }
-    inline std::string getString(int index, const std::string& default_str) { return luaGetString(getState(), index, default_str); }
-    inline bool getBoolean(int index) { return luaGetBoolean(getState(), index); }
-    inline bool getBoolean(int index, bool default_bool) { return luaGetBoolean(getState(), index, default_bool); }
+    inline double toDouble(int index) { return luaToDouble(getState(), index); }
+    inline double toDouble(int index, double default_num) { return luaToDouble(getState(), index, default_num); }
+    inline bool isInteger(int index) { return luaIsInteger(getState(), index); }
+    inline int toInteger(int index) { return luaToInteger(getState(), index); }
+    inline int toInteger(int index, int default_int) { return luaToInteger(getState(), index, default_int); }
+    inline std::string toString(int index) { return luaToString(getState(), index); }
+    inline std::string toString(int index, const std::string& default_str) { return luaToString(getState(), index, default_str); }
+    inline bool toBoolean(int index) { return luaToBoolean(getState(), index); }
+    inline bool toBoolean(int index, bool default_bool) { return luaToBoolean(getState(), index, default_bool); }
 
     //push operate
     inline void pushDouble(double value) { luaPushDouble(getState(), value); }
@@ -406,8 +411,8 @@ Java_com_jmengxy_lualib_Lua_luaPushString(JNIEnv *env, jclass type, jlong luaSta
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_jmengxy_lualib_Lua_luaGetString(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jstring defaultValue) {
-    return env->NewStringUTF(reinterpret_cast<LuaState*>(luaStatePtr)->getString(index, getStringFromJni(env, defaultValue)).c_str());
+Java_com_jmengxy_lualib_Lua_luaToString(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jstring defaultValue) {
+    return env->NewStringUTF(reinterpret_cast<LuaState*>(luaStatePtr)->toString(index, getStringFromJni(env, defaultValue)).c_str());
 }
 
 JNIEXPORT void JNICALL
@@ -417,8 +422,13 @@ Java_com_jmengxy_lualib_Lua_luaPushBoolean(JNIEnv *env, jclass type, jlong luaSt
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_jmengxy_lualib_Lua_luaGetBoolean(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jboolean defaultValue) {
-    return (jboolean) (reinterpret_cast<LuaState*>(luaStatePtr)->getBoolean(index, defaultValue));
+Java_com_jmengxy_lualib_Lua_luaToBoolean(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jboolean defaultValue) {
+    return (jboolean) (reinterpret_cast<LuaState*>(luaStatePtr)->toBoolean(index, defaultValue));
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_jmengxy_lualib_Lua_luaIsInteger(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
+    return (jboolean) reinterpret_cast<LuaState*>(luaStatePtr)->isInteger(index);
 }
 
 JNIEXPORT void JNICALL
@@ -427,8 +437,8 @@ Java_com_jmengxy_lualib_Lua_luaPushInteger(JNIEnv *env, jclass type, jlong luaSt
 }
 
 JNIEXPORT jint JNICALL
-Java_com_jmengxy_lualib_Lua_luaGetInteger(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jint defaultValue) {
-    return (jint) (reinterpret_cast<LuaState*>(luaStatePtr)->getInteger(index, defaultValue));
+Java_com_jmengxy_lualib_Lua_luaToInteger(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jint defaultValue) {
+    return (jint) (reinterpret_cast<LuaState*>(luaStatePtr)->toInteger(index, defaultValue));
 }
 
 JNIEXPORT void JNICALL
@@ -438,8 +448,8 @@ Java_com_jmengxy_lualib_Lua_luaPushDouble(JNIEnv *env, jclass type, jlong luaSta
 }
 
 JNIEXPORT jdouble JNICALL
-Java_com_jmengxy_lualib_Lua_luaGetDouble(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jdouble defaultValue) {
-    return (jdouble) (reinterpret_cast<LuaState*>(luaStatePtr)->getDouble(index, defaultValue));
+Java_com_jmengxy_lualib_Lua_luaToDouble(JNIEnv *env, jclass type, jlong luaStatePtr, jint index, jdouble defaultValue) {
+    return (jdouble) (reinterpret_cast<LuaState*>(luaStatePtr)->toDouble(index, defaultValue));
 }
 
 #ifdef __cplusplus

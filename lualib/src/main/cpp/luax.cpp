@@ -22,6 +22,27 @@ std::string strFormat(const char* fmt, ...)
 }
 
 //lua utility functions
+enum LuaType
+{
+    LuaNone = -1,
+    LuaNil,
+    LuaBoolean,
+    LuaLightUserData,
+    LuaNumber,
+    LuaString,
+    LuaTable,
+    LuaFunction,
+    LuaUserData,
+    LuaThread,
+    LuaNumTags
+};
+
+LuaType luaGetType(lua_State* plua_state, int index)
+{
+    return (LuaType)lua_type(plua_state, index);
+}
+
+
 void luaPop(lua_State* plua_state, int count)
 {
     lua_pop(plua_state, count);
@@ -216,7 +237,9 @@ public:
     int parseLine(const std::string& line);
     int parseFile(const std::string& file);
     bool reset();
+
     //get operate
+    inline int getType(int index) { return (int)luaGetType(getState(), index); }
     inline double getDouble(int index) { return luaGetDouble(getState(), index); }
     inline double getDouble(int index, double default_num) { return luaGetDouble(getState(), index, default_num); }
     inline int getInteger(int index) { return luaGetInteger(getState(), index); }
@@ -364,6 +387,11 @@ JNIEXPORT void JNICALL
 Java_com_jmengxy_lualib_Lua_luaSetGlobal(JNIEnv *env, jclass type, jlong luaStatePtr,
                                          jstring name) {
     reinterpret_cast<LuaState*>(luaStatePtr)->setGlobal(getStringFromJni(env, name));
+}
+
+JNIEXPORT jint JNICALL
+Java_com_jmengxy_lualib_Lua_luaGetType(JNIEnv *env, jclass type, jlong luaStatePtr, jint index) {
+    return reinterpret_cast<LuaState*>(luaStatePtr)->getType(index);
 }
 
 JNIEXPORT void JNICALL

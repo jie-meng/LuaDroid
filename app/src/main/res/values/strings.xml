@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LuaDroid</string>
+    <string name="input">input =</string>
+    <string name="script">script:</string>
+    <string name="output">output =</string>
+    <string name="execute">Execute</string>
 </resources>

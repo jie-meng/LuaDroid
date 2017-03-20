@@ -2,60 +2,80 @@ package com.jmengxy.luadroid;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Pair;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.jmengxy.luadroid.R;
 import com.jmengxy.lualib.Lua;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-import static com.jmengxy.lualib.Lua.*;
-
 public class MainActivity extends AppCompatActivity {
-    @BindView(R.id.text)
-    TextView textView;
+
+    public static final String INPUT = "input";
+    public static final String OUTPUT = "output";
+
+    private EditText inputEdit;
+    private EditText scriptEdit;
+    private TextView outputText;
+    private Button executeButton;
+
     private Lua lua;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        initUI();
+        initLua();
+    }
+
+    private void initLua() {
         lua = new Lua();
-//        lua.setString("s", "test");
-//        lua.setInteger("i", 33);
-//        lua.setDouble("d", 44.5);
-//        lua.parseLine("result = string.find(s, 'a')");
-//        textView.setText(String.format("%s %s %d %f\n%s %s %d %f",
-//                lua.getString("s", ""),
-//                Boolean.toString(lua.getBoolean("result", true)),
-//                lua.getInteger("i", -1),
-//                lua.getDouble("d", -0.1),
-//                lua.getString("s1", "[]"),
-//                lua.getBoolean("b1", true),
-//                lua.getInteger("i1", -1),
-//                lua.getDouble("d1", -0.1)));
-        lua.setString("s", "greeting");
-        lua.parseLine("r = 3");
-        if (lua.getType("r") == Lua.LUA_TYPE_BOOLEAN) {
-            boolean b = lua.getBoolean("r", false);
-            textView.setText(Boolean.toString(b));
-        } else if (lua.getType("r") == Lua.LUA_TYPE_NUMBER) {
-            if (lua.isInteger("r")) {
-                int value = lua.getInteger("r", 0);
-                textView.setText(Integer.toString(value));
+        executeButton.setOnClickListener(v -> {
+            lua.setString(INPUT, inputEdit.getText().toString());
+            Pair<Boolean, String> result = lua.parseLine(scriptEdit.getText().toString());
+            if (result.first) {
+                String outputStr = "";
+                switch (lua.getType(OUTPUT)) {
+                    case Lua.LUA_TYPE_NIL:
+                        outputStr = "nil";
+                        break;
+                    case Lua.LUA_TYPE_NUMBER:
+                        outputStr = lua.isInteger(OUTPUT)
+                                ? Integer.toString(lua.getInteger(OUTPUT, 0))
+                                : Double.toString(lua.getDouble(OUTPUT, 0.0));
+                        break;
+                    case Lua.LUA_TYPE_BOOLEAN:
+                        outputStr = lua.getBoolean(OUTPUT, false) ? "true" : "false";
+                        break;
+                    case Lua.LUA_TYPE_STRING:
+                        outputStr = lua.getString(OUTPUT, "");
+                        break;
+                    default:
+                        outputStr = "";
+                        break;
+                }
+                outputText.setText(outputStr);
             } else {
-                double value = lua.getDouble("r", -0.1);
-                textView.setText(Double.toString(value));
+                outputText.setText("");
+                Toast.makeText(this, "Script parse failed!", Toast.LENGTH_SHORT).show();
             }
-        }
+        });
+    }
+
+    private void initUI() {
+        setContentView(R.layout.activity_main);
+        inputEdit = (EditText)findViewById(R.id.input);
+        scriptEdit = (EditText)findViewById(R.id.script);
+        outputText = (TextView) findViewById(R.id.output);
+        executeButton = (Button) findViewById(R.id.execute);
     }
 
     @Override
     protected void onDestroy() {
         if (lua != null) {
             lua.close();
+            lua = null;
         }
         super.onDestroy();
     }

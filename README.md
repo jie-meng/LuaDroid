@@ -1,7 +1,6 @@
-# LuaDroid
-Lua interpreter on Android
+# LuaDroid -- Lua interpreter for Android
 
-How to import LuaDroid into Android project:
+## How to import LuaDroid into Android project:
 
 1. Add the JitPack repository to your build file
     - gradle
@@ -39,3 +38,31 @@ How to import LuaDroid into Android project:
             <version>V1.0.0</version>
         </dependency>
         ```
+
+## Quick start
+
+    ```
+    //create instance
+    lua = new Lua();
+
+    //get
+    String s = lua.getString("s", "");
+    int i = lua.getInteger("i", 0);
+    double d = lua.getDouble("d", 0.0);
+    boolean b = lua.getBoolean("b", false);
+    
+    //set
+    lua.setString("s", "test_string");
+    lua.setInteger("i", 21);
+    lua.setDouble("d", 3.14);
+    lua.setBoolean("b", true);
+    
+    //others
+    int type = lua.getType("s");
+    boolean b = lua.isInteger("i");
+    Pair<Boolean, String> result = lua.parseLine("s = string.lower('Text')");
+    Pair<Boolean, String> result = lua.parseFile("/home/user/test.lua");
+    
+    //free resource
+    lua.close();
+    ```

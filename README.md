@@ -1,6 +1,6 @@
 # LuaDroid -- Lua interpreter for Android
 
-## How to import LuaDroid into Android project:
+## How to import LuaDroid into Android project
 
 1. Add the JitPack repository to your build file
     - gradle

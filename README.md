@@ -32,7 +32,7 @@
         
         ```
         dependencies {
-                compile 'com.github.joshua-meng:LuaDroid:V1.0.0'
+                compile 'com.github.jie-meng:LuaDroid:V1.0.0'
         }
         ```
         
@@ -40,7 +40,7 @@
         
         ```
         <dependency>
-            <groupId>com.github.joshua-meng</groupId>
+            <groupId>com.github.jie-meng</groupId>
             <artifactId>LuaDroid</artifactId>
             <version>V1.0.0</version>
         </dependency>

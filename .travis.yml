@@ -27,3 +27,4 @@ before_install:
   - unzip -oq android-ndk-r14b-linux-x86_64.zip
   - rm android-ndk-r14b-linux-x86_64.zip
   - export ANDROID_NDK_HOME=$HOME/android-ndk-r14b
+  - export PATH=${ANDROID_NDK_HOME}:${PATH}
